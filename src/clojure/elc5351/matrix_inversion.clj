@@ -1,31 +1,25 @@
-(ns elc5351.core
+(ns elc5351.matrix_inversion
   (:use clojure.core
         elc5351.plot_patch)
   (:require [clojure.core.matrix :as m]
             [clojure.core.matrix.operators :as op]
             [clojure.core.matrix.linear    :refer [norm]]
             [incanter.core   :as incanter]
-            [incanter.charts :as charts]
-            [incanter.stats  :as stats])
+            [incanter.charts :as charts])
   (:import [mikera.matrixx Matrix Matrixx]
-           [mikera.matrixx.impl SparseColumnMatrix SparseRowMatrix]
-           [mikera.vectorz AVector Vector Vectorz]
-           [mikera.vectorz.impl StridedVector SparseIndexedVector ZeroVector ArraySubVector AxisVector]
-           [mikera.indexz Index]
-           [java.awt GraphicsEnvironment]
-           [java.util Arrays ArrayList Collection]))
+           [mikera.vectorz AVector Vector Vectorz]))
+
 (set! *warn-on-reflection* true)
 
 (m/set-current-implementation :vectorz)
-
 
 ;; (def ^Matrix A (Matrix/createRandom 10 10))
 
 (defn error-fn [^AVector a ^AVector b]
   (norm (m/sub a b)))
 
-(defn art-error [^Matrix A x b]
-  (let [Ax (m/inner-product A x)]
+(defn art-error [^Matrix A ^AVector x ^AVector b]
+  (let [Ax (.innerProduct A x)]
     (m/sub! Ax b)
     (norm Ax)))
 
@@ -56,7 +50,7 @@
                                      lambda 0.01}}]
   (let [[rows cols] (m/shape A)]
    (loop [i (int 0)
-          x ^AVector (Vectorz/createUniformRandomVector cols)]
+          x ^Vector (Vectorz/createUniformRandomVector cols)]
      (if (< i iterations)
        (let [new-x (art-update A b x lambda)
              error (art-error A new-x b)]
