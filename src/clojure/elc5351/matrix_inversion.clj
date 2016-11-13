@@ -5,7 +5,8 @@
             [clojure.core.matrix.operators :as op]
             [clojure.core.matrix.linear    :refer [norm]]
             [incanter.core   :as incanter]
-            [incanter.charts :as charts])
+            [incanter.charts :as charts]
+            [incanter.stats  :as stats])
   (:import [mikera.matrixx Matrix Matrixx]
            [mikera.vectorz AVector Vector Vectorz]))
 

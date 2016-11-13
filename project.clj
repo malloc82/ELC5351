@@ -18,7 +18,9 @@
                  [org.clojure/core.async   "0.2.385"]
                  [commons-validator        "1.4.1"]
                  [org.apache.commons/commons-math3 "3.5"]
-                 [org.clojure/tools.logging "0.3.1"]]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [com.github.wendykierp/JTransforms  "3.1"
+                  :classifier "with-dependencies"]]
   :jvm-opts ^:replace []
   :repl-options {:port 5351})
 
