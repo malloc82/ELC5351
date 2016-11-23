@@ -120,3 +120,7 @@
     (m/assign! (m/submatrix mat_shift2 [[0 rows] [0        (- cols cols_mid)]])
                (m/submatrix mat_shift1 [[0 rows] [cols_mid (- cols cols_mid)]]))
     mat_shift2))
+
+
+(defn scale_matrix [m scale]
+  )
