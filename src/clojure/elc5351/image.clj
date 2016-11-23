@@ -85,7 +85,8 @@
                  (paint [g] (.drawImage ^Graphics g im 0 0 this)))]
     {:jframe (doto (JFrame.)
                (.add canvas)
-               (.setSize (Dimension. (+ (.getWidth  im) 15) (+ (.getHeight im) 30)))
+               (.setSize (Dimension. (.getWidth  im) (+ 22 (.getHeight im))))
+               ;; (.setSize (Dimension. (+ (.getWidth  im) 15) (+ (.getHeight im) 30)))
                (.setTitle ^String (if title (str title) "no name"))
                (.show)
                (.toFront)

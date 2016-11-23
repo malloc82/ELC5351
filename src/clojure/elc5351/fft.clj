@@ -19,11 +19,12 @@
     complex_mat))
 
 
-(defn ifft2 [^Matrix m & {:keys [copy scaling]
-                          :or {copy true
+(defn ifft2 [^Matrix m & {:keys [complex copy scaling]
+                          :or {complex true
+                               copy true
                                scaling true}}]
   (let [[rows cols] (m/shape m)
-        mat_ifft (if copy (.clone m) m)]
+        mat_ifft ^Matrix (if complex (if copy (.clone m) m) (realToComplex m rows cols))]
     (.complexInverse ^DoubleFFT_2D (DoubleFFT_2D. rows (bit-shift-right cols 1))
                      (.asDoubleArray mat_ifft) true)
     mat_ifft))

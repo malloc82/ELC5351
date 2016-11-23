@@ -87,3 +87,36 @@
 
 (defn ^Double mat_complex_norm [^Matrix m & {:keys [type] :or {type :inf}}]
   (mat_norm (complexToReal m :type :mag) :type type))
+
+(defn fftshift [^AVector v]
+  (let [v_data ^doubles (.asDoubleArray v)
+        len    (alength v_data)
+        mid    (bit-shift-right len 1)
+        new_v  ^doubles (double-array (alength v_data))]
+    (System/arraycopy v_data   0 new_v (- len mid) mid )
+    (System/arraycopy v_data mid new_v 0           (- len mid))
+    (Vector/wrap new_v)))
+
+(defn fftshift2 [^Matrix m]
+  (let [[rows cols] (m/shape m)
+
+        rows_mid (bit-shift-right rows 1)
+        row_half_len (- rows rows_mid)
+        cols_mid (bit-shift-right cols 1)
+        col_half_len (- cols cols_mid)
+
+        mat_shift1 (Matrix/create rows cols)
+        mat_shift2 (Matrix/createRandom rows cols)]
+
+    (m/assign! (m/submatrix mat_shift1 [[(- rows rows_mid) rows_mid] [0 cols]])
+               (m/submatrix m          [[0                 rows_mid] [0 cols]]))
+
+    (m/assign! (m/submatrix mat_shift1 [[0        (- rows rows_mid)] [0 cols]])
+               (m/submatrix m          [[rows_mid (- rows rows_mid)] [0 cols]]))
+
+    (m/assign! (m/submatrix mat_shift2 [[0 rows] [(- cols cols_mid) cols_mid]])
+               (m/submatrix mat_shift1 [[0 rows] [0                 cols_mid]]))
+
+    (m/assign! (m/submatrix mat_shift2 [[0 rows] [0        (- cols cols_mid)]])
+               (m/submatrix mat_shift1 [[0 rows] [cols_mid (- cols cols_mid)]]))
+    mat_shift2))
