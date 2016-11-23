@@ -25,6 +25,6 @@
                                scaling true}}]
   (let [[rows cols] (m/shape m)
         mat_ifft ^Matrix (if complex (if copy (.clone m) m) (realToComplex m rows cols))]
-    (.complexInverse ^DoubleFFT_2D (DoubleFFT_2D. rows (bit-shift-right cols 1))
+    (.complexInverse (DoubleFFT_2D. rows (bit-shift-right cols 1))
                      (.asDoubleArray mat_ifft) true)
     mat_ifft))
