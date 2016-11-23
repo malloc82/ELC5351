@@ -25,28 +25,32 @@
                                                                  :or {iterations 50}}]
   (let [[rows cols] (m/shape source)
         frame ^Matrix (let [m ^Matrix (Matrix/create rows (bit-shift-left cols 1))]
-                        ;; (m/assign! (m/submatrix m [[0 rows] [0    cols]]) source)
-                        (m/assign! (m/submatrix m [[0 rows] [cols cols]]) target)
+                        (m/assign! (m/submatrix m [[0 rows] [0    cols]]) (scale_matrix source 255.0))
+                        (m/assign! (m/submatrix m [[0 rows] [cols cols]]) (scale_matrix target 255.0))
                         m)
         win (when display
-              (imshow frame :scale 255.0 :title "Source and target"))]
+              (imsave frame "output/original.png")
+              (imshow frame :title "Source and target"))]
    (loop [i    ^Long   (long 0)
-          ft_x ^Matrix (fft2 source :complex false)
-          result nil]
+          _X_  ^Matrix (fft2 source :complex false)
+          _x_  ^Matrix (Matrix/create rows (bit-shift-left cols 1))
+          phase_X nil
+          phase_x nil]
      (if (< i iterations)
-       (let [ft_x_I ^Matrix (complexToReal ft_x :type :mag)
-             ft_x_P ^Matrix (complexToReal ft_x :type :phase)
-             X_next ^Matrix (composeComplex target ft_x_P)
-             ift_X_next ^Matrix (ifft2 X_next :complex true :copy false)
-             ift_X_next_P ^Matrix (complexToReal ift_X_next :type :phase)
-             x_next ^Matrix (composeComplex source ift_X_next_P)]
-         ;; (when (> i 0) (println (format "Iteration %d:" i) (mat_norm (m/sub ft_x_I result))))
+       (let [X_I   ^Matrix (complexToReal _X_ :type :mag)
+             X_P   ^Matrix (complexToReal _X_ :type :phase)
+             new_X ^Matrix (composeComplex target X_P :frame _x_)
+             x     ^Matrix (ifft2 new_X :complex true :copy false)
+             x_P   ^Matrix (complexToReal x :type :phase)
+             new_x ^Matrix (composeComplex source x_P :frame _X_)]
          (print ". ") (flush)
          (when win
-           ;; (m/assign! (m/submatrix frame [[0 rows] [0    cols]]) ft_x_I)
-           (m/assign! (m/submatrix frame [[0 rows] [cols cols]]) (complexToReal ift_X_next :type :mag))
-           (imupdate win frame :scale 255.0 :title (format "iteration %d" i)))
-         (recur (unchecked-inc i) (fft2 x_next :complex true :copy false) ift_X_next_P))
-       (imshow result :title "result")))))
+           (m/assign! (m/submatrix frame [[0 rows] [0    cols]]) (scale_matrix (complexToReal x :type :mag)
+                                                                               255.0))
+           (m/assign! (m/submatrix frame [[0 rows] [cols cols]]) (scale_matrix X_I 255.0))
+           (imupdate win frame :title (format "Iteration %d" i))
+           (imsave frame (format "output/iteration_%03d.png" i)))
+         (recur (unchecked-inc i) (fft2 new_x :complex true :copy false) _x_ X_P x_P))
+       [phase_x phase_X]))))
 
-
+(gerchberg-saxton source target :iterations 100 :display true)

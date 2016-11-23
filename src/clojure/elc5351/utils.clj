@@ -35,13 +35,18 @@
      m_complex)))
 
 
-(defn ^Matrix composeComplex [^Matrix amplitude ^Matrix phase & {:keys [target]}]
+(defn ^Matrix composeComplex [^Matrix amplitude ^Matrix phase & {:keys [frame]}]
   (let [[rows_A cols_A] (m/shape amplitude)
         [rows_P cols_P] (m/shape phase)]
     (when-not (and (= rows_A rows_P) (= cols_A cols_P))
       (println (format "A : [%d, %d], B : [%d, %d]" rows_A cols_A rows_P cols_P))
       (throw (IndexOutOfBoundsException. "composeComplex: amplitude and phase have different dimension.")))
-    (let [complex_mat ^Matrix  (Matrix/create rows_A (bit-shift-left cols_A 1))
+    (when frame
+      (let [[rows_F cols_F] (m/shape ^Matrix frame)]
+        (when-not (and (= rows_A rows_F) (= (bit-shift-left cols_A 1) cols_F))
+          (println (format "A : [%d, %d], Frame : [%d, %d]" rows_A cols_A rows_F cols_F))
+      (throw (IndexOutOfBoundsException. "composeComplex: frame size is not right.")))))
+    (let [complex_mat          (or ^Matrix frame (Matrix/create rows_A (bit-shift-left cols_A 1)))
           complex_arr ^doubles (.asDoubleArray complex_mat)
           amp_arr     ^doubles (.asDoubleArray amplitude)
           phase_arr   ^doubles (.asDoubleArray phase)]
@@ -122,5 +127,11 @@
     mat_shift2))
 
 
-(defn scale_matrix [m scale]
-  )
+(defn scale_matrix [^Matrix m scale & {:keys [mutable]}]
+  (let [_m   ^Matrix (if mutable m (.clone m))
+        _max ^Double (.elementMax _m)
+        _min ^Double (.elementMin _m)
+        _r   ^Double (- _max _min)]
+    (if (not= _r 0.0)
+      (m/emap! #(Math/round ^Double (double (* (/ (- % _min) _r) scale))) _m)
+      _m)))

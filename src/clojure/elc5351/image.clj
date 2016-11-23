@@ -140,7 +140,11 @@
           (aset argb i (Color/HSBtoRGB (/ (- 255.0 (aget arr i)) 360.0) 1.0 1.0)))
         (.setRGB image 0 0 col row argb 0 row))
       (.setPixels ^WritableRaster (.getRaster image) 0 0 col row (m/to-double-array _m nil)))
-    (ImageIO/write image ^String ftype (io/file filename))))
+    (let [f ^java.io.File (io/file filename)
+          folder ^String (.getParent f)]
+      (when folder
+        (.mkdirs ^java.io.File (java.io.File. folder)))
+      (ImageIO/write image ^String ftype (io/file filename)))))
 
 (defn im2bw!
   ^Matrix
